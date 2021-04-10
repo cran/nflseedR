@@ -1,6 +1,6 @@
 Package: nflseedR
 Title: Functions to Efficiently Simulate and Evaluate NFL Seasons
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: 
     c(person(given = "Lee",
              family = "Sharpe",
@@ -23,9 +23,9 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2021-03-30 09:51:58 UTC; ne48wop
+Packaged: 2021-04-10 19:52:10 UTC; S.Carl
 Author: Lee Sharpe [aut, cph],
   Sebastian Carl [cre, aut]
 Maintainer: Sebastian Carl <mrcaseb@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-03-31 08:50:06 UTC
+Date/Publication: 2021-04-10 20:10:02 UTC
