@@ -4,20 +4,18 @@
 \name{nflseedR-package}
 \alias{nflseedR}
 \alias{nflseedR-package}
-\title{nflseedR: Functions to Efficiently Simulate and Evaluate NFL
-    Seasons}
+\title{nflseedR: Functions to Efficiently Simulate and Evaluate NFL Seasons}
 \description{
-\if{html}{\figure{logo.png}{options: align='right' alt='logo' width='120'}}
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-A set of functions to simulate National Football
-    League seasons including the sophisticated tie-breaking procedures.
+A set of functions to simulate National Football League seasons including the sophisticated tie-breaking procedures.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{https://nflseedr.com}
-  \item \url{https://github.com/leesharpe/nflseedR}
-  \item Report bugs at \url{https://github.com/leesharpe/nflseedR/issues}
+  \item \url{https://github.com/nflverse/nflseedR}
+  \item Report bugs at \url{https://github.com/nflverse/nflseedR/issues}
 }
 
 }

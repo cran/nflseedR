@@ -61,4 +61,16 @@ conf_rank <-
   elo_mult <-
   wp <-
   elo_shift <-
-  problem <- NULL
+  problem <-
+  away_wins <-
+  home_wins <-
+  ties <-
+  games_played <-
+  playoff <-
+  afc_division <-
+  nfc_division <-
+  team_abbr <-
+  team_logo_espn <-
+  nfc_team <-
+  losses <-
+  NULL

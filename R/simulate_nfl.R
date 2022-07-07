@@ -74,11 +74,13 @@
 #' ```
 #'
 #' For more information how to work with progress handlers please see [progressr::progressr].
-#' @returns A list of 4 data frames with the results of all simulated games,
-#'   the final standings in each simulated season (incl. playoffs and draft order)
-#'   and summary statistics across all simulated seasons. For a full list,
+#' @returns An `nflseedR_simulation` object containing a list of 6 data frames
+#'   data frames with the results of all simulated games,
+#'   the final standings in each simulated season (incl. playoffs and draft order),
+#'   summary statistics across all simulated seasons, and the siumulation parameters. For a full list,
 #'   please see [the package website](https://nflseedr.com/articles/articles/nflsim.html#simulation-output).
 #' @seealso The examples [on the package website](https://nflseedr.com/articles/articles/nflsim.html)
+#' @seealso The method [nflseedR::summary.nflseedR_simulation()] that creates a pretty html summary table.
 #' @export
 #' @examples
 #' \donttest{
@@ -264,7 +266,7 @@ simulate_nfl <- function(nfl_season = NULL,
 
   if (nrow(schedule) == 0)
   {
-    fn <- glue::glue("https://github.com/leesharpe/nfldata/blob/master/fake_schedule_{nfl_season}.csv?raw=true")
+    fn <- glue::glue("https://github.com/nflverse/nfldata/blob/master/fake_schedule_{nfl_season}.csv?raw=true")
     tryCatch({
       options(readr.num_columns = 0)
       schedule <- readr::read_csv(fn)
@@ -388,7 +390,47 @@ simulate_nfl <- function(nfl_season = NULL,
     ) %>%
     ungroup()
 
+  game_summary <-
+    all_games %>%
+    group_by(game_type, week, away_team, home_team) %>%
+    summarise(
+      away_wins = sum(result < 0),
+      home_wins = sum(result > 0),
+      ties = sum(result == 0),
+      result = mean(result),
+      # != number of simulations in the postseason
+      games_played = away_wins + home_wins + ties,
+      away_percentage = (away_wins + 0.5 * ties) / games_played,
+      home_percentage = (home_wins + 0.5 * ties) / games_played
+    ) %>%
+    ungroup() %>%
+    arrange(week)
+
   if (isTRUE(print_summary)) print(overall)
 
-  list("teams" = all_teams, "games" = all_games, "overall" = overall, "team_wins" = team_wins)
+  out <- structure(
+    list(
+      "teams" = all_teams,
+      "games" = all_games,
+      "overall" = overall,
+      "team_wins" = team_wins,
+      "game_summary" = game_summary,
+      "sim_params" = list(
+        "nfl_season" = nfl_season,
+        "playoff_seeds" = playoff_seeds,
+        "if_ended_today" = if_ended_today,
+        "fresh_season" = fresh_season,
+        "fresh_playoffs" = fresh_playoffs,
+        "tiebreaker_depth" = tiebreaker_depth,
+        "test_week" = test_week,
+        "simulations" = simulations,
+        "sims_per_round" = sims_per_round,
+        ".debug" = .debug,
+        "print_summary" = print_summary
+      )
+    ),
+    class = "nflseedR_simulation"
+  )
+
+  out
 }
