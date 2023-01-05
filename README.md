@@ -66,7 +66,7 @@ or prebuilt from the [development repo](https://nflverse.r-universe.dev)
 with:
 
 ``` r
-install.packages("nflseedR", repos = "https://nflverse.r-universe.dev")
+install.packages("nflseedR", repos = c("https://nflverse.r-universe.dev", getOption("repos")))
 ```
 
 ## Get Started

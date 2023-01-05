@@ -23,6 +23,13 @@
 #'   to be equal to half of the available cores (various benchmarks showed this
 #'   results in optimal performance).
 #' @param print_summary If \code{TRUE}, prints the summary statistics to the console.
+#' @param sim_include One of `"REG"`, `"POST"`, `"DRAFT"` (the default).
+#'   Simulation will behave as follows:
+#'   \describe{
+#'     \item{REG}{Simulate the regular season and compute standings, division ranks, and playoff seeds}
+#'     \item{POST}{Do REG + simulate the postseason}
+#'     \item{DRAFT}{Do POST + compute draft order}
+#'   }
 #' @description This function simulates a given NFL season multiple times using custom functions
 #'   to estimate and simulate game results and computes the outcome of the given
 #'   season including playoffs and draft order.
@@ -77,7 +84,7 @@
 #' @returns An `nflseedR_simulation` object containing a list of 6 data frames
 #'   data frames with the results of all simulated games,
 #'   the final standings in each simulated season (incl. playoffs and draft order),
-#'   summary statistics across all simulated seasons, and the siumulation parameters. For a full list,
+#'   summary statistics across all simulated seasons, and the simulation parameters. For a full list,
 #'   please see [the package website](https://nflseedr.com/articles/articles/nflsim.html#simulation-output).
 #' @seealso The examples [on the package website](https://nflseedr.com/articles/articles/nflsim.html)
 #' @seealso The method [nflseedR::summary.nflseedR_simulation()] that creates a pretty html summary table.
@@ -92,6 +99,7 @@
 #' # Parallel processing can be activated via the following line
 #' # future::plan("multisession")
 #'
+#' try({#to avoid CRAN test problems
 #' # Simulate the season 4 times in 2 rounds
 #' sim <- nflseedR::simulate_nfl(
 #'   nfl_season = 2020,
@@ -102,6 +110,7 @@
 #'
 #' # Overview output
 #' dplyr::glimpse(sim)
+#' })
 #' }
 simulate_nfl <- function(nfl_season = NULL,
                          process_games = NULL,
@@ -115,7 +124,10 @@ simulate_nfl <- function(nfl_season = NULL,
                          simulations = 1000,
                          sims_per_round = max(ceiling(simulations / future::availableCores() * 2), 100),
                          .debug = FALSE,
-                         print_summary = FALSE) {
+                         print_summary = FALSE,
+                         sim_include = c("DRAFT", "REG", "POST")) {
+
+  sim_include <- rlang::arg_match0(sim_include, c("REG", "POST", "DRAFT"))
 
   # Define simple estimate and simulate functions
 
@@ -232,25 +244,26 @@ simulate_nfl <- function(nfl_season = NULL,
     is_single_digit_numeric(simulations),
     is_single_digit_numeric(sims_per_round)
   )) {
-    stop(
-      "One or more of the parameters `nfl_season`, `tiebreaker_depth`, `test_week`, ",
-      "`simulations` and `sims_per_round` are not single digit numeric values!"
+    cli::cli_abort(
+      "One or more of the parameters {.arg nfl_season}, {.arg tiebreaker_depth}, \\
+      {.arg test_week}, {.arg simulations} and {.arg sims_per_round} are not \\
+      single digit numeric values!"
     )
   }
 
   if (!is.function(process_games)) {
-    stop("The parameter `process_games` has to be a function!")
+    cli::cli_abort("The parameter {.arg process_games} has to be a function!")
   }
 
   if (nfl_season < 2002) {
-    stop("The earliest season that can be simulated is 2002.")
+    cli::cli_abort("The earliest season that can be simulated is 2002.")
   }
 
   #### LOAD DATA ####
 
   # load games data
   report("Loading games data")
-  schedule <- load_sharpe_games() %>%
+  schedule <- nflreadr::load_schedules() %>%
     select(
       season, game_type, week, away_team, home_team,
       away_rest, home_rest, location, result
@@ -266,13 +279,16 @@ simulate_nfl <- function(nfl_season = NULL,
 
   if (nrow(schedule) == 0)
   {
-    fn <- glue::glue("https://github.com/nflverse/nfldata/blob/master/fake_schedule_{nfl_season}.csv?raw=true")
+    fn <- paste0(
+      "https://github.com/nflverse/nfldata/blob/master/fake_schedule_",
+      nfl_season,
+      ".csv?raw=true"
+    )
     tryCatch({
-      options(readr.num_columns = 0)
-      schedule <- readr::read_csv(fn)
-      sim_info(glue::glue("No actual schedule exists for {nfl_season}, using fake schedule with correct opponents"))
+      schedule <- data.table::fread(fn)
+      cli::cli_alert_info("No actual schedule exists for {.val {nfl_season}}, using fake schedule with correct opponents.")
     }, error = function(cond) {
-      stop("Unable to locate a schedule for ", nfl_season)
+      cli::cli_abort("Unable to locate a schedule for {.val {nfl_season}}")
     })
   }
 
@@ -313,14 +329,20 @@ simulate_nfl <- function(nfl_season = NULL,
   }
 
   if (sim_rounds > 1 && is_sequential()) {
-    sim_info(c(
-      "Computation in multiple rounds can be accelerated with parallel processing.",
-      "You should consider calling a `future::plan()`. Please see the function documentation for further information.",
-      "Will go on sequentially..."
-    ))
+    cli::cli_inform(c(
+      "i" = "Computation in multiple rounds can be accelerated
+            with parallel processing.",
+      "i" = "You should consider calling a {.code future::plan()}.
+            Please see the function documentation for further information.",
+      "i" = "Will go on sequentially..."
+    ), wrap = TRUE
+    )
   }
 
-  report(glue("Beginning simulation of {simulations} seasons in {sim_rounds} {ifelse(sim_rounds == 1, 'round', 'rounds')}"))
+  report(
+    "Beginning simulation of {.val {simulations}} season{?s} \\
+    in {.val {sim_rounds}} round{?s}"
+  )
 
   p <- progressr::progressor(along = seq_len(sim_rounds))
 
@@ -340,6 +362,7 @@ simulate_nfl <- function(nfl_season = NULL,
       .debug = .debug,
       playoff_seeds = playoff_seeds,
       p = p,
+      sim_include = sim_include,
       .options = furrr::furrr_options(seed = TRUE)
     )
   })
@@ -347,18 +370,36 @@ simulate_nfl <- function(nfl_season = NULL,
   if (isTRUE(.debug)) eval(run) else suppressMessages(eval(run))
 
   if (!is.null(test_week)) {
-    report(glue(
-      "Aborting and returning your `process_games` function's results from Week {test_week}"
-    ))
+    report(
+      "Aborting and returning your {.code process_games} function's \\
+      results from Week {test_week}"
+      , wrap = TRUE
+    )
     return(all[[1]])
   }
 
   report("Combining simulation data")
 
-  all_teams <- furrr::future_map_dfr(all, ~ .x$teams)
-  all_games <- furrr::future_map_dfr(all, ~ .x$games)
+  # `all` is a list of rounds where every round is containing the dataframes
+  # "teams" and "games". We loop over the list with purrr (that's not really bad
+  # because the length of the loop only is the number of rounds) but don't
+  # convert to a dataframe/tibble because dplyr::bind_rows() is too slow.
+  # Instead, we bind with data.table afterwards, it's a reverse dependency
+  # through nflreadr anyways.
+  all_teams <- data.table::rbindlist(purrr::map(all, ~ .x$teams))
+  all_games <- data.table::rbindlist(purrr::map(all, ~ .x$games))
 
   report("Aggregating across simulations")
+
+  # we need the exit number of the sb winner to compute sb and conf percentages
+  # with "exit" because draft_order might not be available depending on the
+  # value of `sim_include`. Need to remove NAs here because Exit will be NA
+  # for postseason teams
+  sb_exit <- max(all_teams$exit, na.rm = TRUE)
+  # If we simulate regular season only this will be < 20. We don't really simulate
+  # postseason then and set sb_exit to NA which result in NA percentages of sb
+  # and conf columns
+  if(sb_exit < 20) sb_exit <- NA_real_
 
   overall <- all_teams %>%
     group_by(conf, division, team) %>%
@@ -367,8 +408,8 @@ simulate_nfl <- function(nfl_season = NULL,
       playoff = mean(!is.na(seed)),
       div1 = mean(div_rank == 1),
       seed1 = mean(!is.na(seed) & seed == 1),
-      won_conf = mean(draft_order >= (length(unique(all_teams$team)) - 1)),
-      won_sb = mean(draft_order == length(unique(all_teams$team))),
+      won_conf = mean(exit >= sb_exit - 1),
+      won_sb = mean(exit == sb_exit),
       draft1 = mean(draft_order == 1),
       draft5 = mean(draft_order <= 5)
     ) %>%
@@ -406,6 +447,8 @@ simulate_nfl <- function(nfl_season = NULL,
     ungroup() %>%
     arrange(week)
 
+  report("DONE!")
+
   if (isTRUE(print_summary)) print(overall)
 
   out <- structure(
@@ -426,7 +469,10 @@ simulate_nfl <- function(nfl_season = NULL,
         "simulations" = simulations,
         "sims_per_round" = sims_per_round,
         ".debug" = .debug,
-        "print_summary" = print_summary
+        "print_summary" = print_summary,
+        "sim_include" = sim_include,
+        "nflseedR_version" = utils::packageVersion("nflseedR"),
+        "finished_at" = Sys.time()
       )
     ),
     class = "nflseedR_simulation"

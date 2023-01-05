@@ -5,10 +5,14 @@
 #' function is a convenient helper to download the file into memory without
 #' having to remember the correct url.
 #'
+#' @inheritDotParams nflreadr::load_schedules
+#' @seealso The internally called function [nflreadr::load_schedules()]
 #' @examples
 #' \donttest{
+#' try({#to avoid CRAN test problems
 #' games <- load_sharpe_games()
 #' dplyr::glimpse(games)
+#' })
 #' \dontshow{
 #' # Close open connections for R CMD Check
 #' future::plan("sequential")
@@ -90,15 +94,8 @@
 #' \item{stadium}{Name of the stadium.}
 #' }
 #' @export
-load_sharpe_games <- function(){
-  fetched <- try(curl::curl_fetch_memory("https://github.com/nflverse/nfldata/blob/master/data/games.rds?raw=true"), silent = TRUE)
-  if (inherits(fetched, "try-error") || fetched$status_code != 200) return(tibble::tibble())
-  read_raw_rds(fetched$content)
-}
+load_schedules <- function(...) nflreadr::load_schedules(...)
 
-read_raw_rds <- function(raw) {
-  con <- gzcon(rawConnection(raw))
-  ret <- readRDS(con)
-  close(con)
-  return(ret)
-}
+#' @export
+#' @rdname load_schedules
+load_sharpe_games <- load_schedules
