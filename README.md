@@ -11,7 +11,7 @@ status](https://www.r-pkg.org/badges/version-last-release/nflseedR)](https://CRA
 downloads](http://cranlogs.r-pkg.org/badges/grand-total/nflseedR)](https://CRAN.R-project.org/package=nflseedR)
 [![Dev
 status](https://img.shields.io/github/r-package/v/nflverse/nflseedR/master?label=dev%20version&style=flat-square&logo=github)](https://nflseedr.com/)
-[![R-CMD-check](https://github.com/nflverse/nflseedR/workflows/R-CMD-check/badge.svg)](https://github.com/nflverse/nflseedR/actions)
+[![R-CMD-check](https://github.com/nflverse/nflseedR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/nflverse/nflseedR/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![nflverse
@@ -29,20 +29,23 @@ betting on futures or win totals.
 The package can run thousands of Monte Carlo style simulations of the
 NFL regular season, based on a model you input. Within each simulated
 season, it will calculate the division standings and playoff seedings
-for you. It will also the generate the playoff games and simulate these
-as well, and calculate the order for next year’s NFL draft. These can be
+for you. It will also generate the playoff games and simulate these as
+well, and calculate the order for next year’s NFL draft. These can be
 used to examine the probability of team making the playoffs or winning
 the Super Bowl, based on your model.
 
 The season simulations will take all completed games into account
 already, and only simulate from there forward, including if run during
-the playoffs. It can also be run as a fresh season, wiping away results
-and simulating from scratch.
+the playoffs.
 
-The season simulation code for nflseedR was developed by Lee Sharpe
+The season simulation code for nflseedR 1.x was developed by Lee Sharpe
 ([@LeeSharpeNFL](https://twitter.com/leesharpenfl)) and building it as
 package was developed by Sebastian Carl
-([@mrcaseb](https://twitter.com/mrcaseb)).
+([@mrcaseb](https://bsky.app/profile/mrcaseb.nflverse.com)).
+
+nflseedR 2.0 introduced high efficient standings and simulation
+functionality which was developed by Sebastian Carl
+([@mrcaseb](https://bsky.app/profile/mrcaseb.nflverse.com))
 
 ## Installation
 
@@ -58,7 +61,7 @@ can install the development version of nflseedR either from
 [GitHub](https://github.com/nflverse/nflseedR) with
 
 ``` r
-if (!require("pak")) install.packages("pak")
+if (!requireNamespace("pak")) install.packages("pak")
 pak::pak("nflverse/nflseedR")
 ```
 
@@ -71,8 +74,10 @@ install.packages("nflseedR", repos = c("https://nflverse.r-universe.dev", getOpt
 
 ## Get Started
 
-With nflseedR it’s possible to [simulate complete
-seasons](https://nflseedr.com/articles/articles/nflsim.html) or use it’s
-[seeding
-functions](https://nflseedr.com/articles/articles/nflseedR.html) in
-custom simulations.
+With nflseedR it’s possible to
+
+- calculate NFL standings including deep tie breakers and to
+- simulate complete NFL seasons.
+
+For more info, please see **[“Getting started with
+nflseedR”](https://nflseedr.com/articles/nflseedR.html)**

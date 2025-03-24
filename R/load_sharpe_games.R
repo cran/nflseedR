@@ -1,12 +1,16 @@
 #' Load Lee Sharpe's Games File
 #'
-#' @description Lee Sharpe maintains an important data set that contains
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Lee Sharpe maintains an important data set that contains
 #' broadly used information on games in the National Football League. This
 #' function is a convenient helper to download the file into memory without
 #' having to remember the correct url.
 #'
 #' @inheritDotParams nflreadr::load_schedules
 #' @seealso The internally called function [nflreadr::load_schedules()]
+#' @keywords internal
 #' @examples
 #' \donttest{
 #' try({#to avoid CRAN test problems
@@ -25,12 +29,12 @@
 # \item{alt_game_id}{This is a more human-readable ID. It consists of: The season, an underscore, the two-digit week number, an underscore, the away team, an underscore, the home team.}
 #' \item{season}{The year of the NFL season. This represents the whole season, so regular season games that happen in January as well as playoff games will occur in the year after this number.}
 #' \item{game_type}{What type of game? One of the following values:
-#' \itemize{
-#' \item{`REG`}{: a regular season game}
-#' \item{`WC`}{: a wildcard playoff game}
-#' \item{`DIV`}{: a divisional round playoff game}
-#' \item{`CON`}{: a conference championship}
-#' \item{`SB`}{: a Super Bowl}
+#' \describe{
+#' \item{`REG`}{a regular season game}
+#' \item{`WC`}{a wildcard playoff game}
+#' \item{`DIV`}{a divisional round playoff game}
+#' \item{`CON`}{a conference championship}
+#' \item{`SB`}{a Super Bowl}
 #' }
 #' }
 #' \item{week}{The week of the NFL season the game occurs in. Please note that the `game_type` will differ for weeks >= 18 because of the season expansion in 2021. Please use `game_type` to filter for regular season or postseason.}
@@ -61,11 +65,11 @@
 # \item{pff}{The id of the game issued by [Pro Football Focus](https://www.pff.com/)}
 # \item{espn}{The id of the game issued by [ESPN](https://www.espn.com/)}
 #' \item{roof}{What was the status of the stadium's roof? Will be one of the following values:
-#' \itemize{
-#' \item{`closed`}{: Stadium has a retractable roof which was closed}
-#' \item{`dome`}{: An indoor stadium}
-#' \item{`open`}{: Stadium has a retractable roof which was open}
-#' \item{`outdoors`}{: An outdoor stadium}
+#' \describe{
+#' \item{`closed`}{Stadium has a retractable roof which was closed}
+#' \item{`dome`}{An indoor stadium}
+#' \item{`open`}{Stadium has a retractable roof which was open}
+#' \item{`outdoors`}{An outdoor stadium}
 #' }
 #' }
 #' \item{surface}{What type of ground the game was played on.}
@@ -94,8 +98,7 @@
 #' \item{stadium}{Name of the stadium.}
 #' }
 #' @export
-load_schedules <- function(...) nflreadr::load_schedules(...)
-
-#' @export
-#' @rdname load_schedules
-load_sharpe_games <- load_schedules
+load_sharpe_games <- function(...){
+  lifecycle::deprecate_warn("2.0.0", "load_sharpe_games()", "nflreadr::load_schedules()")
+  nflreadr::load_schedules(...)
+}

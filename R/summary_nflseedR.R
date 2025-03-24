@@ -27,7 +27,10 @@
 #' }
 #' @export
 summary.nflseedR_simulation <- function(object, ...){
-  rlang::check_installed(c("gt", "scales (>= 1.2.0)"), "to compute a summary table.")
+  rlang::check_installed(
+    c("gt (>= 0.9.0)", "scales (>= 1.2.0)", "nflplotR (>= 1.2.0)"),
+    "to compute a summary table."
+  )
 
   title <- paste(
     "simulating the",
@@ -43,17 +46,17 @@ summary.nflseedR_simulation <- function(object, ...){
     "simulations using nflseedR"
   )
 
-  data <- object$overall %>%
-    mutate(
-      division = gsub("AFC |NFC ", "", division),
-      division = case_when(
-        division == "East" ~ "E A S T",
-        division == "North" ~ "N O R T H",
-        division == "South" ~ "S O U T H",
-        division == "West" ~ "W E S T",
-        TRUE ~ NA_character_
-      )
+  data <- data.table(object$overall, key = "conf")
+  data[, division := gsub("AFC |NFC ", "", division)]
+  data[,
+    division := fcase(
+      division == "East", "E A S T",
+      division == "North", "N O R T H",
+      division == "South", "S O U T H",
+      division == "West", "W E S T",
+      default = NA_character_
     )
+  ]
 
   # This returns a named vector. Names are column names in `data` and values will
   # be FALSE if any value in the corresponding column is not NA, TRUE otherwise
@@ -62,27 +65,18 @@ summary.nflseedR_simulation <- function(object, ...){
   # Get character vector of columns that hold only NA and hide them
   hide_me <- names(column_is_empty[column_is_empty == FALSE])
 
-  afc <- data %>%
-    filter(conf == "AFC") %>%
-    select(-conf) %>%
-    arrange(division, desc(wins), desc(playoff))
-
+  afc <- data["AFC"][order(division, -wins, -playoff)]
   names(afc) <- paste0("afc_", names(afc))
 
-  nfc <- data %>%
-    filter(conf == "NFC") %>%
-    select(-conf) %>%
-    arrange(division, desc(wins), desc(playoff))
-
+  nfc <- data["NFC"][order(division, -wins, -playoff)]
   names(nfc) <- paste0("nfc_", names(nfc))
 
-  tbl <- bind_cols(afc, nfc)
+  tbl <- cbind(afc, nfc)[,c("afc_conf", "nfc_conf") := NULL]
 
-  tbl %>%
-    group_by(afc_division) %>%
-    gt::gt() %>%
+  tbl |>
+    gt::gt(groupname_col = "afc_division") |>
     # see below
-    table_theme() %>%
+    table_theme() |>
     gt::cols_label(
       afc_team = "",
       nfc_team = "",
@@ -110,9 +104,9 @@ summary.nflseedR_simulation <- function(object, ...){
 
       afc_draft5 = gt::html("Top-5<br>Pick"),
       nfc_draft5 = gt::html("Top-5<br>Pick"),
-    ) %>%
-    gt::cols_hide(c(nfc_division, gt::contains(hide_me))) %>%
-    gt::fmt_number(gt::ends_with("wins"), decimals = 1) %>%
+    ) |>
+    gt::cols_hide(c(nfc_division, gt::contains(hide_me))) |>
+    gt::fmt_number(gt::ends_with("wins"), decimals = 1) |>
     gt_fmt_pct_special(
       columns = c(
         gt::ends_with("playoff"),
@@ -123,7 +117,7 @@ summary.nflseedR_simulation <- function(object, ...){
         gt::ends_with("draft1"),
         gt::ends_with("draft5")
       )
-    ) %>%
+    ) |>
     gt::cols_width(
       gt::ends_with("playoff") ~  gt::px(60),
       gt::ends_with("div1") ~     gt::px(60),
@@ -132,7 +126,7 @@ summary.nflseedR_simulation <- function(object, ...){
       gt::ends_with("won_sb") ~   gt::px(60),
       gt::ends_with("draft1") ~   gt::px(60),
       gt::ends_with("draft5") ~   gt::px(60)
-    ) %>%
+    ) |>
     gt::cols_align(
       align = "right",
       columns = c(
@@ -142,7 +136,7 @@ summary.nflseedR_simulation <- function(object, ...){
         gt::ends_with("won_conf"),
         gt::ends_with("won_sb")
       )
-    ) %>%
+    ) |>
     gt::data_color(
       columns = c(
         gt::ends_with("playoff"),
@@ -151,51 +145,34 @@ summary.nflseedR_simulation <- function(object, ...){
         gt::ends_with("won_conf"),
         gt::ends_with("won_sb")
       ),
-      colors = scales::col_numeric(palette = table_colors_positive, domain = c(0, 1))
-    ) %>%
+      fn = scales::col_numeric(palette = table_colors_positive, domain = c(0, 1))
+    ) |>
     gt::data_color(
       columns = c(
         gt::ends_with("draft1"),
         gt::ends_with("draft5")
       ),
-      colors = scales::col_numeric(palette = table_colors_negative, domain = c(0, 1))
-    ) %>%
-    gt::text_transform(
-      locations = gt::cells_body(gt::ends_with("team")),
-      fn = function(x){
-        url <- data.frame(team_abbr = x) %>%
-          left_join(
-            nflreadr::load_teams() %>%
-              filter(!team_abbr %in% c("LAR", "OAK", "SD", "STL")) %>%
-              select(team_abbr, team_logo_espn),
-            by = "team_abbr"
-          ) %>%
-          pull(team_logo_espn)
-        gt::web_image(url = url, height = 30)
-      }) %>%
-    gt::tab_source_note("nflseedR") %>%
+      fn = scales::col_numeric(palette = table_colors_negative, domain = c(0, 1))
+    ) |>
+    nflplotR::gt_nfl_logos(locations = gt::cells_body(gt::ends_with("team"))) |>
+    gt::tab_source_note("nflseedR") |>
     gt::tab_spanner(
-      label = gt::html(gt::web_image(
-        "https://github.com/nflverse/nflfastR-data/raw/master/AFC.png",
-        height = 25
-      )),
+      label = "AFC",
       columns = gt::starts_with("afc")
-    ) %>%
+    ) |>
     gt::tab_spanner(
-      label = gt::html(gt::web_image(
-        "https://github.com/nflverse/nflfastR-data/raw/master/NFC.png",
-        height = 25
-      )),
+      label = "NFC",
       columns = gt::starts_with("nfc")
-    ) %>%
+    ) |>
+    nflplotR::gt_nfl_logos(locations = gt::cells_column_spanners()) |>
     gt::tab_style(
       locations = list(gt::cells_body(nfc_team), gt::cells_column_labels(nfc_team)),
       style = gt::cell_borders("left", weight = gt::px(2))
-    ) %>%
+    ) |>
     gt::tab_style(
       locations = gt::cells_body(columns = gt::ends_with("wins")),
       style = gt::cell_text(weight = "bold")
-    ) %>%
+    ) |>
     gt::tab_style(
       locations = gt::cells_source_notes(),
       style = gt::cell_text(
@@ -206,7 +183,7 @@ summary.nflseedR_simulation <- function(object, ...){
           gt::default_fonts()
         )
       )
-    ) %>%
+    ) |>
     gt::tab_style(
       locations = gt::cells_title(groups = "title"),
       style = gt::cell_text(
@@ -215,7 +192,7 @@ summary.nflseedR_simulation <- function(object, ...){
           gt::google_font("Prosto One"),
           gt::default_fonts()
         ))
-    ) %>%
+    ) |>
     gt::tab_style(
       locations = gt::cells_title(groups = "subtitle"),
       style = gt::cell_text(
@@ -224,18 +201,18 @@ summary.nflseedR_simulation <- function(object, ...){
           gt::google_font("Prosto One"),
           gt::default_fonts()
         ))
-    ) %>%
+    ) |>
     gt::tab_style(
       locations = gt::cells_row_groups(),
       style = list(
         gt::cell_text(align = "center", weight = "bold"),
         gt::cell_fill(color = "#F0F0F0")
       )
-    ) %>%
+    ) |>
     gt::tab_style(
       locations = gt::cells_column_labels(),
       style = gt::cell_text(align = "center", weight = "bold")
-    ) %>%
+    ) |>
     gt::tab_header(
       tools::toTitleCase(title),
       tools::toTitleCase(subtitle)
@@ -247,15 +224,15 @@ summary.nflseedR_simulation <- function(object, ...){
 # https://github.com/jthomasmock/gtExtras/blob/HEAD/R/gt_theme_538.R
 table_theme <- function(gt_object,...) {
 
-  gt_object %>%
-    gt::opt_all_caps()  %>%
+  gt_object |>
+    gt::opt_all_caps()  |>
     gt::opt_table_font(
       font = list(
         gt::google_font("Chivo"),
         gt::default_fonts()
       ),
       weight = 300
-    ) %>%
+    ) |>
     gt::tab_style(
       style = gt::cell_borders(
         sides = "top", color = "black", weight = gt::px(0)
@@ -263,13 +240,13 @@ table_theme <- function(gt_object,...) {
       locations = gt::cells_column_labels(
         columns = gt::everything()
       )
-    ) %>%
+    ) |>
     gt::tab_style(
       style = gt::cell_borders(
         sides = "bottom", color = "black", weight = gt::px(1)
       ),
       locations = gt::cells_row_groups()
-    ) %>%
+    ) |>
     gt::tab_options(
       column_labels.background.color = "white",
       heading.border.bottom.style = "none",

@@ -126,7 +126,7 @@ will behave like they were called with \code{\link[purrr:map]{purrr::map()}} and
 }\if{html}{\out{</div>}}
 
 For more information on possible plans please see
-\href{https://github.com/HenrikBengtsson/future/blob/develop/README.md}{the future package Readme}.
+\href{https://github.com/futureverse/future/blob/develop/README.md}{the future package Readme}.
 }
 
 \subsection{Get Progress Updates while Functions are Running}{
@@ -141,7 +141,7 @@ progress updates globally (for the current session) with
 
 or by piping the function call into \code{\link[progressr:with_progress]{progressr::with_progress()}}:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{simulate_nfl(2020, fresh_season = TRUE) \%>\%
+\if{html}{\out{<div class="sourceCode">}}\preformatted{simulate_nfl(2020, fresh_season = TRUE) |>
   progressr::with_progress()
 }\if{html}{\out{</div>}}
 
