@@ -46,6 +46,17 @@ standings_validate_games <- function(games){
     "home_team",
     "result"
   )
+  if (all(c("sim", "season") %in% games_names)){
+    cli::cli_warn(
+      "The {.arg games} argument includes both {.val sim} and {.val season}. \\
+      Will group by {.val sim}. Please adjust {.arg games} if that is not \\
+      what you want.",
+      wrap = TRUE
+    )
+    # drop season column
+    games$season <- NULL
+    games_names <- colnames(games)
+  }
   uses_sim <- all(c("sim", required_vars) %in% games_names)
   uses_season <- all(c("season", required_vars) %in% games_names)
   has_scores <- all(c("away_score", "home_score") %in% games_names)
@@ -76,6 +87,9 @@ finalize_standings <- function(standings, games){
   }
   if (attributes(games)[["uses_season"]]){
     colnames(standings)[colnames(standings) == "sim"] <- "season"
+  }
+  if ("exit" %chin% colnames(standings)){
+    standings[, exit := sims_exit_translate_to("CHAR")[as.character(exit)]]
   }
   # Conference Point Differential is a deep tiebreaker. We don't need to return it
   standings[, conf_pd := NULL]
