@@ -1,7 +1,7 @@
-2f18eb579da9bedb893f455e4e16ea3f *DESCRIPTION
+8717c86107b792714ad745cc2e1234b9 *DESCRIPTION
 a0643f4016245d10a270ac750341b416 *LICENSE
 25c30ff0b341adb97982e7903f2cf331 *NAMESPACE
-f3fea464d557031b9f3ed1b9b8a9225a *NEWS.md
+0f1fb3e55ffef69657cebebb5d496f04 *NEWS.md
 1c3aacc80f7389539fa2d15a5334dcd9 *R/compute_conference_seeds.R
 58aef25dac971df3b3fb30e51c29e7a5 *R/compute_division_ranks.R
 8155b7f6e7fbb6af276e273b82f30508 *R/compute_draft_order.R
@@ -11,7 +11,7 @@ f1623f7f08c30a9e0d938488e0fd042b *R/data_doc.R
 bf33dcedf3bbd729ce31444b08945854 *R/draft_tiebreaker.R
 4f617e8d62bb5cad3ecc7c0d5c13d155 *R/fmt_pct_special.R
 c96e2add06629bf19c9ff86a6d81603e *R/load_sharpe_games.R
-da77134b61558bb04329c3236b716bdb *R/nflseedR-package.R
+7435d0f04915e122f801e0d781d19852 *R/nflseedR-package.R
 f048db34f2169cc86c43b0755261ca2d *R/silence_tidy_eval_notes.R
 40422faaa5357c9aae9cfbb21108182a *R/sim_helper.R
 7dd60a8787ddc1c9c55d5be58a050c4b *R/simulate_nfl.R
@@ -24,12 +24,12 @@ a8cac3ab7e25ec8fd26bc00860e30427 *R/standings.R
 806cd764981b1d845ada9471e69f9191 *R/standings_add_div_ranks.R
 0b3fabf307aea6c0ef061cbc599de496 *R/standings_add_draft_ranks.R
 553b7dde74f0c1d49ec35b387d3b6200 *R/standings_init.R
-5c23161a0779eb3e53fd5081153ec766 *R/standings_prettify.R
+ff3b175c3ce5998a2abd3b4262ca7f0c *R/standings_prettify.R
 da23f6d749e2458fe80dff27da4fc7a0 *R/standings_utils.R
-f4b78f64f83687d11509bfdc5b82d119 *R/summary_nflseedR.R
+c3dc3d6caa6ee1701ea57746e4e2520d *R/summary_nflseedR.R
 e884a4bda3758d6df1dabc290e9cbbe0 *R/sysdata.rda
-dde5c21ec25620ffa4cde2ae300a10e0 *R/utils.R
-375de1e0cedf836a80d869236a94d636 *README.md
+a6e28abe5cde741172b8c99121566ca7 *R/utils.R
+f8b659f7ee94d9225a0d854a9ccbb57d *README.md
 46eca08e090ead448d286c9668be4fd7 *data/dictionary_game_summary.rda
 88bd670a560c8d13de8e80355e8095b0 *data/dictionary_games.rda
 3fe2e32b3d9516d26176be0f72ba5739 *data/dictionary_overall.rda
@@ -59,7 +59,7 @@ fdf3767fb62d32dab541833bd9e42be4 *man/figures/summary_tbl.png
 9871dbb8cb35e9067d42b88c309bac6e *man/load_sharpe_games.Rd
 bcab11a1387451ea048375b0a82697dd *man/nfl_simulations.Rd
 251ad76c7daaa659cca6ec1302d96fb6 *man/nfl_standings.Rd
-b216833cb0a97ef1b1705b2d7558c916 *man/nfl_standings_prettify.Rd
+d5b2e3b5683a82a2e16ca9fb5ddb5965 *man/nfl_standings_prettify.Rd
 b75d4ce93070aad78490d8161a882352 *man/nflseedR-package.Rd
 4fcaa845fda852d67cb47869f10a7c10 *man/nflseedR_compute_results.Rd
 9d124a966d1501d2970ff5f98610b100 *man/reexports.Rd
@@ -67,7 +67,7 @@ b75d4ce93070aad78490d8161a882352 *man/nflseedR-package.Rd
 92f07f7d22970c89495117511bb06b8f *man/sims_teams_example.Rd
 3023b34c12bdaa27c49f60273d812d94 *man/simulate_nfl.Rd
 568e01752d724560e9c0f561cae4fc01 *man/simulations_verify_fct.Rd
-18ce1496b00d26b70cdfbb25a5c0a240 *man/summary.nflseedR_simulation.Rd
+8f0cdade1de22b3224854b8a41d2bb79 *man/summary.nflseedR_simulation.Rd
 87269d6ef2268e0bf988790c73302d92 *tests/testthat.R
 1a4f8f6507c45a8baa1bcb8047e99ec1 *tests/testthat/_snaps/sims/simulations.md
 d5851603a329c2f7800270c7819fc2a1 *tests/testthat/_snaps/standings/standings.md
